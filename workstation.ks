@@ -1,20 +1,15 @@
-%include /tmp/included
+%include /tmp/include
 
 %pre --log=/tmp/prelog.txt
-rm -f /tmp/included
-TARGET_DEVICE=$(lsblk -no RM,MOUNTPOINTS,KNAME | sed -n -E '/^0\s+(\S+)$/ s//\1/p')
-tmux select-window -t 2
-tmux send-keys -t 2 "lsblk" C-m
-tmux send-keys -t 2 "echo target device: $TARGET_DEVICE" C-m
-tmux send-keys -t 2 'echo touch /tmp/start to break the loop' C-m
+INST_KS=$(sed -E 's/.*\binst[.]ks=(\S+).*/\1/' /proc/cmdline)
+curl -m9 -s -o /tmp/pre.sh "$(dirname ${INST_KS})/pre.sh"
+chmod +x /tmp/pre.sh
+tmux select-window -t2
+tmux send-keys -t2 "/tmp/pre.sh" C-m
 while [[ ! -a /tmp/start ]]; do
   sleep 2
 done
-tmux select-window -t 1
-#target: nonremovable disk that is not mounted
-cat >> /tmp/included <<EOF
-ignoredisk --only-use=$TARGET_DEVICE
-EOF
+tmux select-window -t1
 %end
 
 url --mirrorlist="https://mirrors.fedoraproject.org/mirrorlist?repo=fedora-42&arch=x86_64"
@@ -36,13 +31,6 @@ timezone Europe/Berlin
 text
 reboot
 firstboot --disable
-
-%packages
-@^workstation-product-environment
-vim-default-editor
-vim-enhanced
-vim-ctrlp
-%end
 
 %post --nochroot
 %end

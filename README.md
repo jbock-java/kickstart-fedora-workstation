@@ -1,5 +1,11 @@
 ## Fedora Workstation Kickstart File
 
-Download Fedora (Network Installer image)[https://alt.fedoraproject.org/].
+Generate `my.ks`:
 
-Remove `quiet` and append `inst.cmdline inst.ks=http://XXX.XXX.XXX.XXX:1234/my.ks` to grub cmdline.
+```
+./replace_password <<< SecretPassword123
+```
+
+Download [Network Installer image](https://alt.fedoraproject.org/).
+
+In grub cmdline, remove `quiet` and add `inst.ks=http://XXX.XXX.XXX.XXX:1234/my.ks inst.cmdline`.
