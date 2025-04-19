@@ -2,8 +2,16 @@
 
 %pre --log=/tmp/prelog.txt
 rm -f /tmp/included
-#target: nonremovable disk that is not mounted
 TARGET_DEVICE=$(lsblk -no RM,MOUNTPOINTS,KNAME | sed -n -E '/^0\s+(\S+)$/ s//\1/p')
+tmux select-window -t 2
+tmux send-keys -t 2 "lsblk" C-m
+tmux send-keys -t 2 "echo target device: $TARGET_DEVICE" C-m
+tmux send-keys -t 2 'echo touch /tmp/start to break the loop' C-m
+while [[ ! -a /tmp/start ]]; do
+  sleep 2
+done
+tmux select-window -t 1
+#target: nonremovable disk that is not mounted
 cat >> /tmp/included <<EOF
 ignoredisk --only-use=$TARGET_DEVICE
 EOF
@@ -40,4 +48,8 @@ vim-ctrlp
 %end
 
 %post --log=/tmp/postlog.txt
+#we need the installed kernel, which can differ from the running kernel
+KERNEL_VERSION=$(basename $(ls -d -1 /usr/lib/modules/*x86_64))
+#sample boot config editing
+sed -i -E '/^options\b/ s/\bquiet\b//;s/\brhgb\b//' /boot/efi/loader/entries/*${KERNEL_VERSION}.conf
 %end

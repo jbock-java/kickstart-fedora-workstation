@@ -1,11 +1,5 @@
 ## Fedora Workstation Kickstart File
 
-Boot live medium.
+Download Fedora (Network Installer image)[https://alt.fedoraproject.org/].
 
-Run curl or firefox to get `my.ks`.
-
-Open terminal and start the installation:
-
-```sh
-sudo anaconda --cmdline --kickstart my.ks
-```
+Remove `quiet` and append `inst.cmdline inst.ks=http://XXX.XXX.XXX.XXX:1234/my.ks` to grub cmdline.
