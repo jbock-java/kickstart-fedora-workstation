@@ -45,6 +45,10 @@ type keychain &> /dev/null && eval $(keychain -q --agents ssh --eval)
   GIT_PS1_SHOWDIRTYSTATE=1
   GIT_PS1_SHOWUPSTREAM=auto
 }
+update_git_prompt() {
+  rm -f $HOME/git-prompt.sh
+  curl -m9 -o $HOME/git-prompt.sh 'https://raw.githubusercontent.com/git/git/refs/heads/master/contrib/completion/git-prompt.sh'
+}
 EOF
 
 cat > /etc/skel/.vimrc << "EOF"
