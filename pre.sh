@@ -1,40 +1,46 @@
 #!/bin/bash
 
-FULL_DEPS=(
-  @^workstation-product-environment
+PACKAGES=(
+  @core
+  @c-development
+  git
+  ugrep
+  tmux
+  keychain
   vim-enhanced
   vim-default-editor
+  vim-gitgutter
+  vim-fugitive
+  vim-ctrlp
 )
 
 #clear screen
 printf '\033[2J'
 printf '\033[H'
 
-rm -f /tmp/include
-
-#installation target: a nonremovable disk that is not mounted
+FEDORA_VERSION=$(sed -E 's/^.*\b([[:digit:]]+)\b.*$/\1/' /etc/fedora-release)
 TARGET_DEVICE=$(lsblk -no RM,TYPE,MOUNTPOINTS,KNAME | sed -n -E '/^0\s+disk\s+(\S+)$/ s//\1/p')
-lsblk
+
+{
+  echo "ignoredisk --only-use $TARGET_DEVICE"
+  echo "url --mirrorlist 'https://mirrors.fedoraproject.org/mirrorlist?repo=fedora-${FEDORA_VERSION}&arch=x86_64'"
+  echo "network --device=link --hostname f${FEDORA_VERSION}"
+  echo %packages
+  echo ${PACKAGES[@]} | tr ' ' '\n'
+  echo %end
+} > /tmp/include
+
+echo "Using Fedora version: $FEDORA_VERSION"
 echo "Using target device: $TARGET_DEVICE"
 echo "All data on the target device will be erased."
 echo "Is this OK? [Y/n]"
 read -r
 
-if [[ ${REPLY:-y} =~ [Yy] ]]; then
-  {
-    echo "ignoredisk --only-use=$TARGET_DEVICE"
-    echo %packages
-    echo ${FULL_DEPS[@]} | tr ' ' '\n'
-    echo %end
-  } >> /tmp/include
-  touch /tmp/start
-  sleep 5
-else
-  {
-    echo "ignoredisk --only-use=$TARGET_DEVICE"
-    echo -e "%packages\n@core\n%end"
-  } >> /tmp/include
-  echo "Installation halted."
-  echo "Use this terminal to investigate, or reboot the system."
-  #...or edit /tmp/include, then touch /tmp/start
-fi
+[[ ! ${REPLY:-y} =~ [Yy] ]] && {
+  echo "Installation stopped."
+  exit 0
+}
+
+#break the waiting loop
+touch /tmp/start
+sleep 5
