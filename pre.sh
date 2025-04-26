@@ -3,6 +3,7 @@
 PACKAGES=(
   @core
   @c-development
+  xz-devel
   git
   ugrep
   tmux
